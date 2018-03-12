@@ -15,7 +15,7 @@ app.use(express.static(__dirname + '/public'));
 var lastPlayderID = 0;
 var countQuestion = 0;
 var maxQuestion = 10;
-var requestPlayerToStart = 1;
+var requestPlayerToStart = 2;
 
 var GameState = {
   WAIT_ENOUGHT_PLAYERS: 1,
@@ -60,7 +60,7 @@ io.on('connection', function (socket) {
     ++gameData.numUsers;
     addedUser = true;
     socket.emit('login', {
-	  numUsers: gameData.numUsers,
+      numUsers: gameData.numUsers,
       yourid: socket.player.id,
       players: getAllPlayers()
     });

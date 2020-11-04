@@ -1,8 +1,44 @@
-version: 2.1
-orbs:
-  node: circleci/node@3.0.0
-workflows:
-  node-tests:
-    jobs:
-      - node/test
+version: 2
+jobs:
+  deploy-prod:
+    docker:
+      # specify the version you desire here (you might not want node)
+      - image: circleci/node:10.1
+    steps:
+      - type: shell
+        shell: /bin/sh
+        pwd: /
+        command: sudo apt update && sudo apt install git -y && git --version
+      # Update environment
+      - run: sudo apt update
 
+      # Install rsync. It will be used to upload our code to server
+      - run: sudo apt-get install rsync
+
+      # Sync the SSH keys
+      - add_ssh_keys
+
+      # Check out the code in the project directory
+      - checkout
+
+      # Install JS dependencies.
+      # Of course, you may not need this. It just shows how to use some commands such as npm
+      - run: npm install
+
+      # build
+      - run: npm run build
+
+      # Add the server to known hosts
+      - run: ssh-keyscan -H 159.65.143.86 >> ~/.ssh/known_hosts
+
+      # Finally, upload your files to server.
+      - run: rsync -avce ssh --delete ./ circleci@159.65.143.86:/var/www/eno-investment
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - deploy-prod:
+          filters:
+            branches:
+              only: master
